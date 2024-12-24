@@ -1,6 +1,7 @@
 package com.kotlinspring.controller
 
 import com.kotlinspring.dto.CourseDTO
+import com.kotlinspring.entity.Course
 import com.kotlinspring.repository.CourseRepository
 import com.kotlinspring.util.courseEntityList
 import org.junit.jupiter.api.Assertions
@@ -64,5 +65,29 @@ class CourseControllerIntgTest {
            .responseBody
         println("courseDTOs : $courseDTOs")
         assertEquals(3,courseDTOs!!.size )
+    }
+
+    @Test
+    fun updateCourse() {
+
+//        val instructor = instructorRepository.findInstructorByName("Dilip Sundarraj")
+        val courseEntity = Course(null,
+            "Apache Kafka for Developers using Spring Boot", "Development")
+        courseRepository.save(courseEntity)
+        val updatedCourseEntity = Course(null,
+            "Apache Kafka for Developers using Spring Boot1", "Development" )
+
+        val updatedCourseDTO = webTestClient
+            .put()
+            .uri("/v1/courses/{courseId}", courseEntity.id)
+            .bodyValue(updatedCourseEntity)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody(CourseDTO::class.java)
+            .returnResult()
+            .responseBody
+
+        assertEquals("Apache Kafka for Developers using Spring Boot1", updatedCourseDTO?.name)
+
     }
 }
