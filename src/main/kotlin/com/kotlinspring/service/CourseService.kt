@@ -2,6 +2,7 @@ package com.kotlinspring.service
 
 import com.kotlinspring.dto.CourseDTO
 import com.kotlinspring.entity.Course
+import com.kotlinspring.exception.CourseNotFoundException
 import com.kotlinspring.repository.CourseRepository
 import mu.KLogging
 import org.springframework.stereotype.Service
@@ -27,5 +28,24 @@ class CourseService(val courseRepository: CourseRepository){
             .map {
                 CourseDTO(it.id, it.name, it.category)
             }
+    }
+
+    fun updateCourse(courseId : Int, courseDTO : CourseDTO) : CourseDTO {
+
+        val existingCourse = courseRepository.findById(courseId)
+        return if (existingCourse.isPresent){
+            existingCourse.get()
+                .let {
+                    it.name = courseDTO.name
+                    it.category = courseDTO.category
+                    courseRepository.save(it)
+    // let is a lambda expression last statement will always be a return value
+                    CourseDTO(it.id, it.name, it.category)
+                }
+        } else {
+            // if the id is invalid then we will throw a custom exception
+            throw CourseNotFoundException("No course found for the passed in Id : $courseId")
+        }
+
     }
 }
